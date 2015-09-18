@@ -1,6 +1,6 @@
-queue
+dq
 =====
-Queue is a queue that supports growth, compaction, and concurrent support. The size of the queue can be constrained by setting it's `maxCapacity` to a value > 0. This is set at queue creation time via the `New()` function.
+Dq is a dynamic queue that supports growth, compaction, and is concurrency safe. The size of the queue can be constrained by setting its `maxCapacity` to a value > 0. This is set at queue creation time via the `New()` function.
 
 The queue itself is `[]interface{}`.
 
@@ -15,18 +15,20 @@ Reallocations are minimized by setting the initial capacity of the queue to a re
 ## Usage
 Go get:
 
-    go get github.com/mohae/queue
+    go get github.com/mohae/dq
 
 Import:
 
-    import github.com/mohae/queue
+    import github.com/mohae/dq
 
 Get a queue:
 
-    q := queue.New(256, 0)
+    q := dq.New(256, 0)
 
 This returns a queue with an initial capacity of 256 items and without a maximum capacity.
 
+## Notes
+Before growing the queue, the amount of empty space in the queue is checked. If the queue is 50% empty, instead of growing the queue, the items in the queue will be shifted forward.
 
 ## License
 This code is licensed under the MIT license. For more information, please check the included LICENSE file.
