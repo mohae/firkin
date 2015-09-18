@@ -88,7 +88,7 @@ func TestQueueing(t *testing.T) {
 }
 
 // Tests Enqueue/Dequeue/Enqueue, shifting, and growth is properly handled
-func TestDequeueEngueue(t *testing.T) {
+func TestDequeueEnqueue(t *testing.T) {
 	tests := []struct {
 		size        int
 		maxCap      int
@@ -148,5 +148,27 @@ func TestDequeueEngueue(t *testing.T) {
 			t.Errorf("Expected cap of queue to be %d. got %d", test.expectedCap, cap(q.items))
 		}
 
+	}
+}
+
+func TestSetShiftPercentage(t *testing.T) {
+	tests := []struct{
+		percent int
+		expected int
+	}{
+		{-1, 0},
+		{0, 0},
+		{1, 1},
+		{20, 20},
+		{99, 99},
+		{100, 100},
+		{101, 100},
+	}
+	q := New(10, 0)
+	for i, test := range tests {
+		q.SetShiftPercent(test.percent)
+		if q.shiftPercent != test.expected {
+			t.Errorf("%d: expected shiftPercent to be %d; got %d", i, test.expected, q.shiftPercent)
+		}
 	}
 }

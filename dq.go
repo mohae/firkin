@@ -64,6 +64,24 @@ func New(size, maxCap int) *Queue {
 	return &Queue{items: make([]interface{}, size, size), maxCap: maxCap, shiftPercent: shiftPercent}
 }
 
+// SetShiftPercent sets the queue's shiftPercent: the percentage of the queue
+// that must be empty before the remaining items will be shifted to the
+// the beginning of the slice. This occurs when the slice is set to grow.
+//
+// Valid range of values are 0-100, inclusive. Vaues < 0 are set to 0 and
+// values > 100 are set to 100.
+func (q *Queue) SetShiftPercent(i int) {
+		if i < 0 {
+			q.shiftPercent = 0
+			return
+		}
+		if i > 100 {
+			q.shiftPercent = 100
+			return
+		}
+		q.shiftPercent = i
+}
+
 // Enqueue: adds an item to the queue. If adding the item requires growing
 // the queue, the queue will either be shifted, to make room at the end of the queue
 // or it will grow. If the queue cannot be grown, an error will be returned.
