@@ -25,15 +25,18 @@ Import:
 
     import github.com/mohae/dq
 
+
+## Queue
+A new queue can be obtained by either using either the `NewQ()` or `NewQueue()` functions; `NewQueue()` is an alias for `NewQ()`
 Get an unbounded queue:
 
-    q := dq.New(256, 0)
+    q := dq.NewQ(256, 0)
 
 This returns a queue with an initial capacity of 256 items and without a maximum capacity.
 
 Get a bounded queue:
 
-    q := dq.New(64, 256)
+    q := dq.NewQ(64, 256)
 
 This returns a queue with an initial capacity of 64 items that can grow to a queue with a maximum size of 256 items.
 
