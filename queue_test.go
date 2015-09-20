@@ -1,5 +1,4 @@
-package queue
-
+package dq
 import (
 	"testing"
 )

@@ -36,7 +36,7 @@
 // concurrency.  Unexported methods do not do any locking/unlocking since it
 // is expected that the calling method has already obtained the lock and will
 // release it as appropriate.
-package queue
+package dq
 
 import (
 	"fmt"
