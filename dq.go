@@ -4,7 +4,10 @@
 // The queue can be configured with a max capacity, which will cap the size of
 // the queue so unbounded grouwth cannot occur.  When a maximum capacity for
 // a queue is defined, an error will occur if the queue is full and an attempt
-// is made to add another item to the queue.
+// is made to add another item to the queue.  If the tail of the capped queue
+// is at the cap, an attempt will be made to shift the queue towards the
+// beginning of the slice. If the queue cannot be shifted (it is full) an
+// error will be returned.
 //
 // A queue is created with a minimum length and an optional maximum size
 // (capacity).  If the max size of the queue == 0, the queue will be unbounded.
@@ -93,6 +96,9 @@ func (q *Queue) Enqueue(item interface{}) error {
 		shifted := q.shift()
 		// if we weren't able to make room by shifting, grow the queue/
 		if !shifted {
+			if q.maxCap > 0 && cap(q.items) == q.maxCap {
+				return fmt.Errorf("cannot enqueue '%v' to a capped queue at capacity", item)
+			}
 			err := q.grow()
 			if err != nil {
 				return err
@@ -149,7 +155,7 @@ func (q *Queue) Head() int {
 }
 
 // Length returns the current length(cap) of the queue. Note, this is not the
-// number of items in the queue, for that use Items()
+// number of items in the queue, for that use ItemCount()
 func (q *Queue) Length() int {
 	q.RLock()
 	defer q.RUnlock()
@@ -163,12 +169,21 @@ func (q *Queue) ItemCount() int {
 	return q.tail - q.head
 }
 
-// shift: if shiftPercent items have been removed from the queue, the remaining
-// items in the queue will be shifted to element 0-n, where n is the number of
-// remaining items in the queue. Returns whether or not a shift occurred
+// shift: if either shiftPercent items have been removed from the queue or the
+// queue is a capped queue, the remaining items in the queue will be shifted
+// to the beginning of the queue. Returns whether or not a shift occurred
 func (q *Queue) shift() bool {
-	if q.head < (cap(q.items)*q.shiftPercent)/100 {
-		return false
+	// shift percent applies to non-capped queues.
+	if q.maxCap == 0 {
+		if q.head < (cap(q.items)*q.shiftPercent)/100 {
+			return false
+		}
+	}
+	// if this is a capped queue, but there is no room for a shift, nothing to do.
+	if q.maxCap > 0 {
+		if q.head == 0 {
+			return false
+		}
 	}
 	q.items = append(q.items[:0], q.items[q.head:q.tail]...)
 	// set the pointers to the correct position
@@ -177,15 +192,16 @@ func (q *Queue) shift() bool {
 	return true
 }
 
-// grow grows the slice using an algorithm similar to growSlice(). This is a bit slower
-// than relying on slice's automatic growth, but allows for capacity enforcement w/o
-// growing the slice cap beyond the configured maxCap, if applicable.
+// grow grows the slice using an algorithm similar to growSlice(). This is a
+// bit slower than relying on slice's automatic growth, but allows for capacity
+// enforcement w/o growing the slice cap beyond the configured maxCap, if
+// applicable.
 //
-// Since a temporary slice is created to store the current queue, all items in queue
-// are automatically shifted
+// Since a temporary slice is created to store the current queue, all items in
+// the queue are automatically shifted
 func (q *Queue) grow() error {
 	if cap(q.items) == q.maxCap && q.maxCap > 0 {
-		return fmt.Errorf("groweQueue: cannot grow beyond max capacity of %d", q.maxCap)
+		return fmt.Errorf("growQueue: cannot grow beyond max capacity of %d", q.maxCap)
 	}
 	var len int
 	if cap(q.items) < 1024 {

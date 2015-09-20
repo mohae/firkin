@@ -35,54 +35,45 @@ func TestQueueing(t *testing.T) {
 	}{
 		{size: 2, maxCap: 0, tailPos: 4, expectedCap: 4, items: []interface{}{0, 1, 2, 3}, errString: ""},
 		{size: 2, maxCap: 0, tailPos: 5, expectedCap: 8, items: []interface{}{0, 1, 2, 3, 4}, errString: ""},
-		{size: 2, maxCap: 4, tailPos: 4, expectedCap: 4, items: []interface{}{0, 1, 2, 3, 4}, errString: "groweQueue: cannot grow beyond max capacity of 4"},
+		{size: 2, maxCap: 4, tailPos: 4, expectedCap: 4, items: []interface{}{0, 1, 2, 3}, errString: ""},
 	}
-	for _, test := range tests {
-		var err error
+	for i, test := range tests {
 		q := New(test.size, test.maxCap)
 		for _, v := range test.items {
-			err = q.Enqueue(v)
+			_ = q.Enqueue(v)
+
 		}
-		if test.errString != "" {
-			if err == nil {
-				t.Errorf("Expected error, got none")
-				continue
-			}
-			if err.Error() != test.errString {
-				t.Errorf("Expected error to be %q. got %q", test.errString, err.Error())
-				continue
-			}
-		}
+
 		// check that the items are as expected:
 		if len(q.items) != test.expectedCap {
-			t.Error("Expected %d items in queue, got %d", test.expectedCap, len(q.items))
+			t.Errorf("%d: expected %d items in queue, got %d", i, test.expectedCap, len(q.items))
 		}
 		if cap(q.items) != test.expectedCap {
-			t.Error("Expected queue cap to be %d, got %d", test.expectedCap, cap(q.items))
+			t.Errorf("%d: expected queue cap to be %d, got %d", i, test.expectedCap, cap(q.items))
 		}
 		if q.head != test.headPos {
-			t.Errorf("Expected head to be at pos %d, got %d", test.headPos, q.head)
+			t.Errorf("%d: expected head to be at pos %d, got %d", i, test.headPos, q.head)
 		}
 		if q.maxCap != test.maxCap {
-			t.Errorf("Expected maxCap to be %d, was %d", test.maxCap, q.maxCap)
+			t.Errorf("%d: expected maxCap to be %d, was %d", i, test.maxCap, q.maxCap)
 		}
 		if cap(q.items) > test.maxCap && test.maxCap > 0 {
-			t.Errorf("Expected cap of queue to be equal to it's max capacity, %d; was %d", test.maxCap, cap(q.items))
+			t.Errorf("%d: expected cap of queue to be equal to it's max capacity, %d; was %d", i, test.maxCap, cap(q.items))
 		}
-		for i := 0; i < q.tail; i++ {
-			if q.items[i] != test.items[i] {
-				t.Errorf("Expected value of index %d to be %d, got %d", i, test.items[i], q.items[i])
+		for j := 0; j < q.tail; j++ {
+			if q.items[j] != test.items[j] {
+				t.Errorf("%d: expected value of index %d to be %d, got %d", i, j, test.items[j], q.items[j])
 			}
 		}
 
 		// dequeue 1 item and check
 		next := q.Dequeue()
 		if next != test.items[0] {
-			t.Errorf("Expected %d, got %d", test.items[0], next)
+			t.Errorf("%d: expected %d, got %d", i, test.items[0], next)
 			continue
 		}
 		if q.head != 1 {
-			t.Errorf("Expected head to point to 1, got %d", q.head)
+			t.Errorf("%d: expected head to point to 1, got %d", i, q.head)
 		}
 	}
 }
@@ -171,4 +162,28 @@ func TestSetShiftPercentage(t *testing.T) {
 			t.Errorf("%d: expected shiftPercent to be %d; got %d", i, test.expected, q.shiftPercent)
 		}
 	}
+}
+
+func TestCappedQueue(t *testing.T) {
+	q := New(4, 4)
+	for i := 0; i < 4; i++ {
+		q.Enqueue(i)
+	}
+	// remove an item and then try to add
+	_ = q.Dequeue()
+	err := q.Enqueue(5)
+	if err != nil {
+		t.Errorf("Expected enqueue to a capped queue with tail at end, but room to shift to succeed; got %s", err)
+		return
+	}
+	// enqueue another item, queue is full, this should fail
+	err = q.Enqueue(6)
+	if err == nil {
+		t.Errorf("Expected enqueue to a capped queue that is full to error, it did not")
+		return
+	}
+	if err.Error() != "cannot enqueue '6' to a capped queue at capacity" {
+		t.Errorf("Expected enqueue to a capped queue to error with \"cannot enqueue '6' to a capped queue at capacity\" , got %q", err)
+	}
+
 }
