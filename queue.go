@@ -60,11 +60,16 @@ type Queue struct {
 	shiftPercent int // the % of items that need to be removed before shifting occurs
 }
 
-// New returns an empty queue with a capacity equal to the recieved size value. If
+// NewQ returns an empty queue with a capacity equal to the recieved size value. If
 // maxCap is > 0, the queue will not grow larger than maxCap; if it is at maxCap
 // and growth is requred to enqueue an item, an error will occur.
-func New(size, maxCap int) *Queue {
+func NewQ(size, maxCap int) *Queue {
 	return &Queue{items: make([]interface{}, size, size), maxCap: maxCap, shiftPercent: shiftPercent}
+}
+
+// NewQueue is a convenience wrapper to NewQ().
+func NewQueue(size, maxCap int) *Queue {
+	return NewQ(size, maxCap)
 }
 
 // SetShiftPercent sets the queue's shiftPercent: the percentage of the queue

@@ -5,7 +5,7 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	q := New(10, 0)
+	q := NewQ(10, 0)
 	if cap(q.items) != 10 {
 		t.Errorf("expected 10, got %d", cap(q.items))
 	}
@@ -13,7 +13,7 @@ func TestNew(t *testing.T) {
 		t.Errorf("expected 0, got %d", q.maxCap)
 	}
 
-	q = New(100, 200)
+	q = NewQueue(100, 200)
 	if cap(q.items) != 100 {
 		t.Errorf("expected 100, got %d", cap(q.items))
 	}
@@ -38,7 +38,7 @@ func TestQueueing(t *testing.T) {
 		{size: 2, maxCap: 4, tailPos: 4, expectedCap: 4, items: []interface{}{0, 1, 2, 3}, errString: ""},
 	}
 	for i, test := range tests {
-		q := New(test.size, test.maxCap)
+		q := NewQ(test.size, test.maxCap)
 		for _, v := range test.items {
 			_ = q.Enqueue(v)
 
@@ -99,7 +99,7 @@ func TestDequeueEnqueue(t *testing.T) {
 	// First add the queue
 	for _, test := range tests {
 		var err error
-		q := New(test.size, test.maxCap)
+		q := NewQ(test.size, test.maxCap)
 		for _, v := range test.items {
 			err = q.Enqueue(v)
 		}
@@ -155,7 +155,7 @@ func TestSetShiftPercentage(t *testing.T) {
 		{100, 100},
 		{101, 100},
 	}
-	q := New(10, 0)
+	q := NewQueue(10, 0)
 	for i, test := range tests {
 		q.SetShiftPercent(test.percent)
 		if q.shiftPercent != test.expected {
@@ -165,7 +165,7 @@ func TestSetShiftPercentage(t *testing.T) {
 }
 
 func TestCappedQueue(t *testing.T) {
-	q := New(4, 4)
+	q := NewQ(4, 4)
 	for i := 0; i < 4; i++ {
 		q.Enqueue(i)
 	}
