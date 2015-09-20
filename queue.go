@@ -115,6 +115,21 @@ func (q *Queue) IsEmpty() bool {
 	return false
 }
 
+// IsFull returns whether or not the queue is full. This only applies to
+// bounded queues
+func (q *Queue) IsFull() bool {
+	if !q.bounded {
+		return false
+	}
+	if q.head > 0 {
+		return false
+	}
+	if len(q.items) == cap(q.items) {
+		return true
+	}
+	return false
+}
+
 // Count returns the current number of items in the queue
 func (q *Queue) Count() int {
 	q.RLock()

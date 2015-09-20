@@ -183,3 +183,31 @@ func TestCappedQueue(t *testing.T) {
 	}
 
 }
+
+func TestIsEmptyFull(t *testing.T) {
+	tests := []struct{
+		size int
+		bounded bool
+		items []int
+		isEmpty bool
+		isFull bool
+	}{
+		{4, false, []int{}, true, false},
+		{4, false, []int{0, 1, 2, 3}, false, false},
+		{4, true, []int{}, true, false},
+		{4, true, []int{0, 1, 2}, false, false},
+		{4, true, []int{0, 1, 2, 3}, false, true},
+	}
+	for i, test := range tests {
+		q := NewQ(test.size, test.bounded)
+		for _, v := range test.items {
+			q.Enqueue(v)
+		}
+		if q.IsEmpty() != test.isEmpty {
+			t.Errorf("%d: expected IsEmpty() to return %t. got %t", i, test.isEmpty, q.IsEmpty())
+		}
+		if q.IsFull() != test.isFull {
+			t.Errorf("%d: expected IsFull() to return %t. got %t", i, test.isFull, q.IsFull())
+		}
+	}
+}
