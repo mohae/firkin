@@ -2,10 +2,8 @@ dq
 =====
 Dq got its name from dynamic queue, which was what this package originally implemented. The queue within this package can either function as a dynamic queue or a bounded queue.
 
-The queue itself is `[]interface{}`.
-
 ## Queue
-This implements a queue that can either be bounded, or unbounded.
+This implements a queue that can either be bounded, or unbounded. The queue itself is an `[]interface{}`.
 
 The design goals of this queue were:
 
