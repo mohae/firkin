@@ -48,7 +48,7 @@ Operations supported:
 
 For bounded queues, an error will occur on `Push()` operations if the queue is full.
 
-For `Pop()` and `Peek()` operations on an empty queue, an empty interface, `interface{}`, will be returned.
+`Pop()` and `Peek()` operations return both a value and a bool. If the stack is empty, an interface containing nil and false will be returned, otherwise the value and true will be returned. 
 
 ### Usage
 A new queue can be obtained by either using either the `NewQ()` or `NewQueue()` functions; `NewQueue()` is an alias for `NewQ()`

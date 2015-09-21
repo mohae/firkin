@@ -41,25 +41,25 @@ func (s *Stack) Push(item interface{}) error {
 
 // Pop pops an item off the stack {}. A nil wil be returned if the stack is
 // empty
-func (s *Stack) Pop() interface{} {
+func (s *Stack) Pop() (interface{}, bool) {
   s.Lock()
   defer s.Unlock()
   if s.size == 0 {
-    return nil
+    return nil, false
   }
   s.size--
-  return s.items[s.size]
+  return s.items[s.size], true
 }
 
 // Peek returns the item at the top of the stack without popping it. If the
 // stack is empty, it will return nil
-func (s *Stack) Peek() interface{} {
+func (s *Stack) Peek() (interface{}, bool) {
   s.RLock()
   defer s.RUnlock()
   if s.size == 0 {
-    return nil
+    return nil, false
   }
-  return s.items[s.size-1]
+  return s.items[s.size-1], true
 }
 
 // IsEmpty returns whether or not the stack is empty
