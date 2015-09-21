@@ -4,20 +4,13 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	q := NewQ(10, false)
-	if cap(q.items) != 10 {
+	q := NewQ(10)
+	if q.Cap() != 10 {
 		t.Errorf("expected 10, got %d", cap(q.items))
 	}
-	if q.bounded {
-		t.Errorf("expected false, got %t", q.bounded)
-	}
-
-	q = NewQueue(100, true)
-	if cap(q.items) != 100 {
+	q = NewQueue(100)
+	if q.Cap() != 100 {
 		t.Errorf("expected 100, got %d", cap(q.items))
-	}
-	if !q.bounded {
-		t.Errorf("expected true, got %t", q.bounded)
 	}
 }
 
@@ -25,36 +18,30 @@ func TestNew(t *testing.T) {
 func TestQueueing(t *testing.T) {
 	var tests = []struct {
 		size        int
-		bounded     bool
 		headPos     int
-		expectedLen     int
+		expectedLen int
 		expectedCap int
 		items       []interface{}
-		errString   string
 	}{
-		{size: 2, bounded: false, expectedLen: 4, expectedCap: 4, items: []interface{}{0, 1, 2, 3}, errString: ""},
-		{size: 2, bounded: false, expectedLen: 5, expectedCap: 8, items: []interface{}{0, 1, 2, 3, 4}, errString: ""},
-		{size: 4, bounded: true, expectedLen: 4, expectedCap: 4, items: []interface{}{0, 1, 2, 3}, errString: ""},
+		{size: 2, expectedLen: 2, expectedCap: 2, items: []interface{}{0, 1}},
+		{size: 2, expectedLen: 5, expectedCap: 8, items: []interface{}{0, 1, 2, 3, 4}},
+		{size: 2, expectedLen: 4, expectedCap: 4, items: []interface{}{0, 1, 2, 3}},
 	}
 	for i, test := range tests {
-		q := NewQ(test.size, test.bounded)
+		q := NewQ(test.size)
 		for _, v := range test.items {
 			_ = q.Enqueue(v)
 
 		}
-
 		// check that the items are as expected:
-		if len(q.items) != test.expectedLen {
+		if q.Len() != test.expectedLen {
 			t.Errorf("%d: expected %d items in queue, got %d", i, test.expectedLen, len(q.items))
 		}
-		if cap(q.items) != test.expectedCap {
+		if q.Cap() != test.expectedCap {
 			t.Errorf("%d: expected queue cap to be %d, got %d", i, test.expectedCap, cap(q.items))
 		}
 		if q.head != test.headPos {
 			t.Errorf("%d: expected head to be at pos %d, got %d", i, test.headPos, q.head)
-		}
-		if q.bounded != test.bounded {
-			t.Errorf("%d: expected bounded to be %t, was %t", i, test.bounded, q.bounded)
 		}
 		for j := 0; j < len(q.items); j++ {
 			if q.items[j] != test.items[j] {
@@ -75,10 +62,9 @@ func TestQueueing(t *testing.T) {
 }
 
 // Tests Enqueue/Dequeue/Enqueue, shifting, and growth is properly handled
-func TestDequeueEnqueue(t *testing.T) {
+func TestQDequeueEnqueue(t *testing.T) {
 	tests := []struct {
 		size        int
-		bounded     bool
 		headPos     int
 		expectedLen int
 		expectedCap int
@@ -88,16 +74,16 @@ func TestDequeueEnqueue(t *testing.T) {
 		items2      []interface{}
 		errString   string
 	}{
-		{size: 10, bounded: false, expectedLen: 7, expectedCap: 10, dequeueCnt: 5, dequeueVals: []interface{}{0, 1, 2, 3, 4},
+		{size: 10, expectedLen: 7, expectedCap: 10, dequeueCnt: 5, dequeueVals: []interface{}{0, 1, 2, 3, 4},
 			items: []interface{}{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, items2: []interface{}{10, 11}, errString: ""},
 	}
 
 	// First add the queue
 	for _, test := range tests {
 		var err error
-		q := NewQ(test.size, test.bounded)
+		q := NewQueue(test.size)
 		for _, v := range test.items {
-			err = q.Enqueue(v)
+			_ = q.Enqueue(v)
 		}
 		if test.errString != "" {
 			if err == nil {
@@ -128,17 +114,17 @@ func TestDequeueEnqueue(t *testing.T) {
 		if q.head != 0 {
 			t.Errorf("Expected head to be at pos 0, got %d", q.head)
 		}
-		if len(q.items) != test.expectedLen {
+		if q.Len() != test.expectedLen {
 			t.Errorf("Expected tail to be at %d, got %d", test.expectedLen, len(q.items))
 		}
-		if cap(q.items) != test.expectedCap {
+		if q.Cap() != test.expectedCap {
 			t.Errorf("Expected cap of queue to be %d. got %d", test.expectedCap, cap(q.items))
 		}
 
 	}
 }
 
-func TestSetShiftPercentage(t *testing.T) {
+func TestQSetShiftPercentage(t *testing.T) {
 	tests := []struct{
 		percent int
 		expected int
@@ -151,7 +137,7 @@ func TestSetShiftPercentage(t *testing.T) {
 		{100, 100},
 		{101, 100},
 	}
-	q := NewQueue(10, true)
+	q := NewQueue(10)
 	for i, test := range tests {
 		q.SetShiftPercent(test.percent)
 		if q.shiftPercent != test.expected {
@@ -160,54 +146,22 @@ func TestSetShiftPercentage(t *testing.T) {
 	}
 }
 
-func TestCappedQueue(t *testing.T) {
-	q := NewQ(4, true)
-	for i := 0; i < 4; i++ {
-		q.Enqueue(i)
-	}
-	// remove an item and then try to add
-	_ = q.Dequeue()
-	err := q.Enqueue(5)
-	if err != nil {
-		t.Errorf("Expected enqueue to a bounded queue with len == cap, but room to shift to succeed; got %s", err)
-		return
-	}
-	// enqueue another item, queue is full, this should fail
-	err = q.Enqueue(6)
-	if err == nil {
-		t.Errorf("Expected enqueue to a bounded queue that is full to error, it did not")
-		return
-	}
-	if err.Error() != "bounded queue full: cannot enqueue '6'" {
-		t.Errorf("Expected enqueue to a capped queue to error with \"bounded queue full: cannot enqueue '6'\" , got %q", err)
-	}
-
-}
-
-func TestIsEmptyFull(t *testing.T) {
+func TestQIsEmpty(t *testing.T) {
 	tests := []struct{
 		size int
-		bounded bool
 		items []int
 		isEmpty bool
-		isFull bool
 	}{
-		{4, false, []int{}, true, false},
-		{4, false, []int{0, 1, 2, 3}, false, false},
-		{4, true, []int{}, true, false},
-		{4, true, []int{0, 1, 2}, false, false},
-		{4, true, []int{0, 1, 2, 3}, false, true},
+		{4, []int{}, true},
+		{4, []int{0, 1, 2, 3}, false},
 	}
 	for i, test := range tests {
-		q := NewQ(test.size, test.bounded)
+		q := NewQ(test.size)
 		for _, v := range test.items {
 			q.Enqueue(v)
 		}
 		if q.IsEmpty() != test.isEmpty {
 			t.Errorf("%d: expected IsEmpty() to return %t. got %t", i, test.isEmpty, q.IsEmpty())
-		}
-		if q.IsFull() != test.isFull {
-			t.Errorf("%d: expected IsFull() to return %t. got %t", i, test.isFull, q.IsFull())
 		}
 	}
 }
