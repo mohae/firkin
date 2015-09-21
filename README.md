@@ -48,21 +48,38 @@ Operations supported:
 
 For bounded queues, an error will occur on `Push()` operations if the queue is full.
 
-`Pop()` and `Peek()` operations return both a value and a bool. If the stack is empty, an interface containing nil and false will be returned, otherwise the value and true will be returned. 
+`Pop()` and `Peek()` operations return both a value and a bool. If the stack is empty, an interface containing nil and false will be returned, otherwise the value and true will be returned.
 
-### Usage
+## Usage
+### Queue
 A new queue can be obtained by either using either the `NewQ()` or `NewQueue()` functions; `NewQueue()` is an alias for `NewQ()`
+
 Get an unbounded queue:
 
-    q := dq.NewQ(256, 0)
+    q := dq.NewQ(256, false)
 
-This returns a queue with an initial capacity of 256 items and without a maximum capacity.
+This returns a queue with an initial capacity of 256 items.
 
 Get a bounded queue:
 
-    q := dq.NewQ(64, 256)
+    q := dq.NewQueue(256, true)
 
-This returns a queue with an initial capacity of 64 items that can grow to a queue with a maximum size of 256 items.
+This returns a bounded queue with a capacity of 256 items.
+
+### Stack
+A new stack can be obtained by using the `NewStack()` function.
+
+Get an unbounded stack:
+
+    s := dq.NewStack(256, false)
+
+This returns a stack with an intial capacity of 256 items.
+
+Get a bounded stack:
+
+    s := dq.NewStack(256, false)
+
+This returns a bounded stack with a capacity of 256 items.
 
 ## License
 This code is licensed under the MIT license. For more information, please check the included LICENSE file.
