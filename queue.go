@@ -11,6 +11,18 @@ import (
 	"sync"
 )
 
+// Queuer interface
+type Queuer interface {
+	Enqueue(item interface{})
+	Dequeue() interface{}
+	Peek() interface{}
+	Len() int
+	Cap() int
+	IsEmpty() bool
+	IsFull() bool
+	Reset()
+}
+
 // shiftPercent is the default value for shifting the queue items to the
 // front of the queue instead of growing the queue.  If at least the % of
 // the items have been removed from the queue, the items in the queue will
@@ -23,20 +35,21 @@ var shiftPercent = 50
 // or its alias, NewQueue().
 type Queue struct {
 	sync.Mutex
+	initCap      int
 	items        []interface{}
 	head         int // current item in queue
 	shiftPercent int // the % of items that need to be removed before shifting occurs
 }
 
-// NewQ returns an empty queue with an initial  capacity equal to the recieved
-// size.
+// NewQ is a convenience wrapper to NewQ().
 func NewQ(size int) *Queue {
-	return &Queue{items: make([]interface{}, 0, size), shiftPercent: shiftPercent}
-}
+	return NewQueue(size)
+	}
 
-// NewQueue is a convenience wrapper to NewQ().
+// NewQueue returns an empty queue with an initial  capacity equal to the
+// recieved size.
 func NewQueue(size int) *Queue {
-	return NewQ(size)
+	return &Queue{initCap: size, items: make([]interface{}, 0, size), shiftPercent: shiftPercent}
 }
 
 // SetShiftPercent sets the queue's shiftPercent: the percentage of the queue
@@ -88,6 +101,14 @@ func (q *Queue) Dequeue() interface{} {
 	return i
 }
 
+// Peek returns the next item in the queue. Post-peek, the queue remains the
+// same.
+func (q *Queue) Peek() interface{} {
+	q.Lock()
+	defer q.Unlock()
+	return q.items[q.head]
+}
+
 // IsEmpty returns whether or not the queue is empty
 func (q *Queue) IsEmpty() bool {
 	q.Lock()
@@ -96,6 +117,12 @@ func (q *Queue) IsEmpty() bool {
 		return true
 	}
 	q.Unlock()
+	return false
+}
+
+// IsFull returns false; this is implemented to fulfill Queuer but a dynamic
+// queue will never be full.
+func (q *Queue) IsFull() bool {
 	return false
 }
 
@@ -126,10 +153,13 @@ func (q *Queue) shift() bool {
 	return true
 }
 
-// Reset resets the queue; head and tail point to element 0.
+// reset resets the queue; head and tail point to element 0. This does not
+// shrink the queue; for that use Reset()
 func (q *Queue) reset() {
 	q.Lock()
 	q.head = 0
 	q.items = q.items[:0]
 	q.Unlock()
 }
+
+// Reset resets the queue to its original capacity.

@@ -68,59 +68,69 @@ func TestQDequeueEnqueue(t *testing.T) {
 		headPos     int
 		expectedLen int
 		expectedCap int
+		expectedPeek int
+		postPeekHeadPos int
 		dequeueCnt  int
 		dequeueVals []interface{}
+		postDequeueHeadPos int
+		postDequeueLen int
 		items       []interface{}
-		items2      []interface{}
-		errString   string
+		enqueueItems      []interface{}
+		postEnqueueLen int
+		postEnqueueCap int
 	}{
-		{size: 10, expectedLen: 7, expectedCap: 10, dequeueCnt: 5, dequeueVals: []interface{}{0, 1, 2, 3, 4},
-			items: []interface{}{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, items2: []interface{}{10, 11}, errString: ""},
+		{size: 10, headPos: 0, expectedLen: 10, expectedCap: 10, expectedPeek: 5, postPeekHeadPos: 5,
+		 	dequeueCnt: 5, dequeueVals: []interface{}{0, 1, 2, 3, 4}, postDequeueHeadPos: 5,
+			postDequeueLen: 5, items: []interface{}{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+			enqueueItems: []interface{}{10, 11}, postEnqueueLen: 7, postEnqueueCap: 10},
 	}
 
 	// First add the queue
-	for _, test := range tests {
-		var err error
+	for i, test := range tests {
 		q := NewQueue(test.size)
 		for _, v := range test.items {
 			_ = q.Enqueue(v)
 		}
-		if test.errString != "" {
-			if err == nil {
-				t.Errorf("Expected error, got none")
-				continue
-			}
-			if err.Error() != test.errString {
-				t.Errorf("Expected error to be %q. got %q", test.errString, err.Error())
-				continue
-			}
+		if q.head != test.headPos {
+			t.Errorf("%d: post queue population, expected head pos to be %d, got %d", test.headPos, q.head)
 		}
-
+		if q.Len() != test.expectedLen {
+			t.Errorf("%d: post queue population, expected len to be %d got %d", i, test.expectedLen, q.Len())
+		}
+		if q.Cap() != test.expectedCap {
+			t.Errorf("%d: post queue population, expected cap to be %d, got %d", i, test.expectedCap, q.Cap())
+		}
 		// dequeue 5 items
 		for i := 0; i < test.dequeueCnt; i++ {
 			v := q.Dequeue()
 			if v != test.dequeueVals[i] {
-				t.Errorf("Expected %v, got %v", test.dequeueVals[i], v)
+				t.Errorf("%d: dequeue: expected %v, got %v", i,test.dequeueVals[i], v)
 			}
 		}
-
 		if q.head != test.dequeueCnt {
-			t.Errorf("Expected head to point to %d, got %d", test.dequeueCnt, q.head)
+			t.Errorf("%d: post deuque: expected head to point to %d, got %d", i, test.dequeueCnt, q.head)
+		}
+		// peek stuff
+		v := q.Peek()
+		if v.(int) != test.expectedPeek {
+			t.Errorf("%d: post peek: expected peek to return %d, got %d", i, test.expectedPeek, v.(int))
+		}
+		if q.head != test.postPeekHeadPos {
+			t.Errorf("%d: post peek: expected head to be at pos %d, got %d", i, test.postPeekHeadPos, q.head)
 		}
 		// enqueue the next items; should not grow, should just shift the items
-		for _, v := range test.items2 {
+		for _, v := range test.enqueueItems {
 			q.Enqueue(v)
 		}
 		if q.head != 0 {
-			t.Errorf("Expected head to be at pos 0, got %d", q.head)
+			t.Errorf("%d post enqueue: expected head to be at pos 0, got %d", i, q.head)
 		}
-		if q.Len() != test.expectedLen {
-			t.Errorf("Expected tail to be at %d, got %d", test.expectedLen, len(q.items))
+		if q.Len() != test.postEnqueueLen {
+			t.Errorf("%d post enqueue: expected tail to be at %d, got %d", i, test.postEnqueueLen, q.Len())
 		}
-		if q.Cap() != test.expectedCap {
-			t.Errorf("Expected cap of queue to be %d. got %d", test.expectedCap, cap(q.items))
+		if q.Cap() != test.postEnqueueCap {
+			t.Errorf("%d post enqueue: expected cap of queue to be %d, got %d", i, test.postEnqueueCap, q.Cap())
 		}
-
 	}
 }
 
@@ -146,7 +156,7 @@ func TestQSetShiftPercentage(t *testing.T) {
 	}
 }
 
-func TestQIsEmpty(t *testing.T) {
+func TestQIsEmptyFull(t *testing.T) {
 	tests := []struct{
 		size int
 		items []int
@@ -162,6 +172,9 @@ func TestQIsEmpty(t *testing.T) {
 		}
 		if q.IsEmpty() != test.isEmpty {
 			t.Errorf("%d: expected IsEmpty() to return %t. got %t", i, test.isEmpty, q.IsEmpty())
+		}
+		if q.IsFull() {
+			t.Errorf("%d: expected IsFull() to return false, got %t", i, q.IsFull())
 		}
 	}
 }
