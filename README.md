@@ -6,9 +6,34 @@ DQ implements a queue, either bounded or unbounded.
 
 DQ implements a stack, either bounded or unbounded.
 
-## Queue
-This implements a queue that can either be bounded or unbounded. The queue itself is an `[]interface{}`.
+All implementations are thread-safe.
 
+## Queue
+There are two queue implementations: unboundeed and bounded.  For each, the queue itself is an `[]interface{}`.
+
+### Bounded queue
+The bounded queue is implemented as a circular queue using a slice with a capacity that is one slot greater than the requested size. This allows for easy detection of whether or not the queue is full or empty.
+
+If the queue is full, an error will be returned and the item will not be added to the queue. If, instead of an error, you wish to have the item replace the oldest item, then use the ring buffer.
+
+During initial queue creation, all slots are initialized. This makes the intial queue request slower than just allocatin the memory for the queue but eliminates the need for additional logic in the queue to check whether or not the slot was already initialized, which is only useful the first time the queue is filled.
+
+After queue creation, all item operations are done using the slice index.
+
+Getting a circular queue:
+
+    q := NewCircularQ(size)
+
+Supported operations:
+```
+Enqueue(item)
+Dequeue() (item bool)
+Peek() (item bool)
+IsFull() bool
+IsEmpty() bool
+```
+
+### Unbounded queue
 The design goals of this queue were:
 
 * a queue that can grow as needed
@@ -22,64 +47,52 @@ For unbounded queues, before growing the queue, the amount of empty space in the
 
 For bounded queues, if the current queue length is equal to its capacity and there is an item to enqueue, the queue is checked to see if any elements have been dequeued.  If there is space at the beginning of the queue, all items are shifted forward, making room for the new item.  If the queue is full, an error is returned.
 
+Getting a unbounded queue:
+
+    q := NewQueue(initialSize)
+
+or
+
+    q := NewQ(initialSize)
+
 Operations supported:
 ```
-* Enqueue
-* Dequeue
-* SetShiftPercent
-* IsEmpty
-* IsFull
-* Size
-* Reset
+Enqueue(item) error
+Dequeue() (item, bool)
+Peek() (item, bool)
+SetShiftPercent(int)
+IsEmpty() bool
+IsFull() bool
+Len() int
+Cap() int
+Reset()
 ```
 ## Stack
 This implements a stack that can either be bounded or unbounded. The stack itself is an `[]interface{}`.
 
 A stack is created by calling `NewStack(size, bounded)`. The `size` is the initial capacity of the stack; `bounded` is a bool for whether or not this stack is bounded. If true, the stack will never be larger than its initial size. If false, the stack will grow as needed.
 
+Getting a bounded stack with 256 slots:
+
+    s := dq.NewStack(256, true)
+
+Getting an unboudned stack with an initial capacity of 256 slots:
+
+    s := dq.NewStack(256, false)
+
 Operations supported:
 ```
-* Push
-* Pop
-* Peek
-* IsEmpty
-* Size
+Push(item) error
+Pop() (interface{}, bool)
+Peek() (interface{}, bool)
+IsEmpty() bool
+Len() bool
+Reset()
 ```
 
 For bounded queues, an error will occur on `Push()` operations if the queue is full.
 
 `Pop()` and `Peek()` operations return both a value and a bool. If the stack is empty, an interface containing nil and false will be returned, otherwise the value and true will be returned.
-
-## Usage
-### Queue
-A new queue can be obtained by either using either the `NewQ()` or `NewQueue()` functions; `NewQueue()` is an alias for `NewQ()`
-
-Get an unbounded queue:
-
-    q := dq.NewQ(256, false)
-
-This returns a queue with an initial capacity of 256 items.
-
-Get a bounded queue:
-
-    q := dq.NewQueue(256, true)
-
-This returns a bounded queue with a capacity of 256 items.
-
-### Stack
-A new stack can be obtained by using the `NewStack()` function.
-
-Get an unbounded stack:
-
-    s := dq.NewStack(256, false)
-
-This returns a stack with an intial capacity of 256 items.
-
-Get a bounded stack:
-
-    s := dq.NewStack(256, false)
-
-This returns a bounded stack with a capacity of 256 items.
 
 ## License
 This code is licensed under the MIT license. For more information, please check the included LICENSE file.
