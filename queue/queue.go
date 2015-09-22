@@ -5,7 +5,7 @@
 //
 // For unbounded queues, the initial capacity of the queue will be equal to the
 // received size.
-package dq
+package queue
 
 import (
 	"sync"
