@@ -85,39 +85,45 @@ func (q *Queue) Enqueue(item interface{}) error {
 }
 
 // Dequeue removes an item from the queue. If the removal of the item empties
-// the queue, the head and tail will be set to 0.
-func (q *Queue) Dequeue() interface{} {
+// the queue, the head and tail will be set to 0. If the queue is empty, a
+// false will be returned, else true.
+func (q *Queue) Dequeue() (interface{}, bool) {
 	q.Lock()
-	i := q.items[q.head]
-	if q.head == len(q.items) {
-		q.Unlock()
-		q.reset()
-		return i
+	defer q.Unlock()
+	if q.isEmpty() {
+		return nil, false
 	}
 	q.head++
-	q.Unlock()
-	return i
+	return q.items[q.head-1], true
 }
 
 // Peek returns the next item in the queue. Post-peek, the queue remains the
 // same.
-func (q *Queue) Peek() interface{} {
+func (q *Queue) Peek() (interface{}, bool) {
 	q.Lock()
 	defer q.Unlock()
-	return q.items[q.head]
+	if q.isEmpty() {
+		return nil, false
+	}
+	return q.items[q.head], true
 }
 
 // IsEmpty returns whether or not the queue is empty
 func (q *Queue) IsEmpty() bool {
 	q.Lock()
-	if len(q.items) == 0  {
-		q.Unlock()
-		return true
-	}
-	q.Unlock()
-	return false
+	defer q.Unlock()
+	return q.isEmpty()
 }
 
+// isEmpty is an unexported version that doesn't lock because the caller
+// will have handled that. Reduces multiple locks/unlocks during operations
+// that need to check for emptiness and have already obtained a lock
+func (q *Queue) isEmpty() bool {
+	if q.head == len(q.items) {
+		return true
+	}
+	return false
+}
 // IsFull returns false; this is implemented to fulfill Queuer but a dynamic
 // queue will never be full.
 func (q *Queue) IsFull() bool {

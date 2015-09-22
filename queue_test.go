@@ -50,7 +50,7 @@ func TestQueueing(t *testing.T) {
 		}
 
 		// dequeue 1 item and check
-		next := q.Dequeue()
+		next, _ := q.Dequeue()
 		if next != test.items[0] {
 			t.Errorf("%d: expected %d, got %d", i, test.items[0], next)
 			continue
@@ -102,7 +102,7 @@ func TestQDequeueEnqueue(t *testing.T) {
 		}
 		// dequeue 5 items
 		for i := 0; i < test.dequeueCnt; i++ {
-			v := q.Dequeue()
+			v , _ := q.Dequeue()
 			if v != test.dequeueVals[i] {
 				t.Errorf("%d: dequeue: expected %v, got %v", i,test.dequeueVals[i], v)
 			}
@@ -111,7 +111,7 @@ func TestQDequeueEnqueue(t *testing.T) {
 			t.Errorf("%d: post deuque: expected head to point to %d, got %d", i, test.dequeueCnt, q.head)
 		}
 		// peek stuff
-		v := q.Peek()
+		v, _ := q.Peek()
 		if v.(int) != test.expectedPeek {
 			t.Errorf("%d: post peek: expected peek to return %d, got %d", i, test.expectedPeek, v.(int))
 		}
@@ -175,6 +175,56 @@ func TestQIsEmptyFull(t *testing.T) {
 		}
 		if q.IsFull() {
 			t.Errorf("%d: expected IsFull() to return false, got %t", i, q.IsFull())
+		}
+	}
+}
+
+func TestDequeuePeekErr(t *testing.T) {
+	tests := []struct{
+		size int
+		items []int
+		retItems []int
+		retOk []bool
+		isEmpty bool
+		isFull bool
+	}{
+		{2, []int{0, 1, 2, 3, 4}, []int{}, []bool{}, false, false},
+		{2, []int{0, 1, 2, 3, 4}, []int{0, 1, 2, 3, 4}, []bool{true, true, true, true, true}, true, false},
+		{2, []int{0, 1, 2, 3, 4}, []int{0, 1, 2, 3, 4, 5}, []bool{true, true, true, true, true, false}, true, false},
+	}
+	for i, test := range tests {
+		q := NewQ(test.size)
+		for j, v := range test.items {
+			err := q.Enqueue(v)
+			if err != nil {
+				t.Errorf("%d enqueueing #%d: unexpected error %q", i, j)
+			}
+		}
+		for j, v := range test.retItems {
+			val, ok := q.Peek()
+			if ok != test.retOk[j] {
+				t.Errorf("%d peek #%d: expected peek to return %t, got %t", i, j, test.retOk[j], ok)
+			}
+			if ok {
+				if val != v {
+					t.Errorf("%d peek #%d: expected peek to return %v, got %v", i, j, v, val)
+				}
+			}
+			val, ok = q.Dequeue()
+			if ok != test.retOk[j] {
+				t.Errorf("%d peek #%d: expected peek to return %t, got %t", i, j, test.retOk[j], ok)
+			}
+			if ok {
+				if val != v {
+					t.Errorf("%d peek #%d: expected peek to return %v, got %v", i, j, v, val)
+				}
+			}
+		}
+		if q.IsEmpty() != test.isEmpty {
+			t.Errorf("%d: expected queue IsEmpty to be %t, got %t", i, test.isEmpty, q.IsEmpty())
+		}
+		if q.IsFull() != test.isFull {
+			t.Errorf("%d: expected queue IsFull to be %t, got %t", i, test.isFull, q.IsFull())
 		}
 	}
 }
