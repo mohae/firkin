@@ -13,11 +13,9 @@ import (
 
 // Queuer interface
 type Queuer interface {
-	Enqueue(item interface{})
-	Dequeue() interface{}
-	Peek() interface{}
-	Len() int
-	Cap() int
+	Enqueue(item interface{}) error
+	Dequeue() (interface{}, bool)
+	Peek() (interface{}, bool)
 	IsEmpty() bool
 	IsFull() bool
 	Reset()
