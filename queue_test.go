@@ -228,3 +228,36 @@ func TestDequeuePeekErr(t *testing.T) {
 		}
 	}
 }
+
+func TestQueueReset(t *testing.T) {
+	tests := []struct{
+		size int
+		enqueue int
+		cap int
+	}{
+		{2, 2, 2},
+		{2, 5, 8},
+	}
+	for i, test := range tests {
+		q := NewQ(test.size)
+		for j := 0; j < test.enqueue; j++ {
+			_ = q.Enqueue(j)
+		}
+		if q.Len() != test.enqueue {
+			t.Errorf("%d: expected queue len to be %d, got %d", i, test.enqueue, q.Len())
+		}
+		if q.Cap() != test.cap {
+			t.Errorf("%d: expected queue cap to be %d, got %d", i, test.cap, q.Cap())
+		}
+		q.Reset()
+		if q.Len() != 0 {
+			t.Errorf("%d: after Reset(), expected queue len to be 0, got %d", i, q.Len())
+		}
+		if q.head != 0 {
+			t.Errorf("%d: after Reset(), expected queue head to be at pos 0, was at pos %d", i, q.head)
+		}
+		if q.Cap() != test.size {
+			t.Errorf("%d: after Reset(), expected queue cap to be %d, got %d", i, test.size, q.Cap())
+		}
+	}
+}

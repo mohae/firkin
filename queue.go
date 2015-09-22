@@ -167,3 +167,9 @@ func (q *Queue) reset() {
 }
 
 // Reset resets the queue to its original capacity.
+func (q *Queue) Reset() {
+	q.Lock()
+	q.head = 0
+	q.items = make([]interface{}, 0, q.initCap)
+	q.Unlock()
+}
