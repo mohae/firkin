@@ -46,14 +46,12 @@ func (c *Circular) Enqueue(item interface{}) error {
 // empty, a false will be returned.
 func (c *Circular) Dequeue() (interface{}, bool) {
   c.Lock()
-  if c.isEmpty() {
-    c.Unlock()
-    return nil, false
+  item, ok := c.peek()
+  if ok {
+    c.Head = int(math.Mod(float64(c.Head + 1), float64(cap(c.Items))))
   }
-  item := c.Items[c.Head]
-  c.Head = int(math.Mod(float64(c.Head + 1), float64(cap(c.Items))))
   c.Unlock()
-  return item, true
+  return item, ok
 }
 
 // Peek will return the next item in the queue without removing it from the
@@ -61,6 +59,11 @@ func (c *Circular) Dequeue() (interface{}, bool) {
 func (c *Circular) Peek() (interface{}, bool) {
   c.Lock()
   defer c.Unlock()
+  return c.peek()
+}
+
+// peek is an unexported version that expects the caller to handle locking.
+func (c *Circular) peek() (interface{}, bool) {
   if c.isEmpty() {
     return nil, false
   }
