@@ -37,11 +37,7 @@ func (c *Circular) Enqueue(item interface{}) error {
     return fmt.Errorf("queue full: cannot enqueue %v", item)
   }
   c.Items[c.Tail] = item
-  if c.Tail == c.cap {
-    c.Tail = 0
-  } else {
-    c.Tail++
-  }
+  c.Tail = int(math.Mod(float64(c.Tail + 1), float64(cap(c.Items))))
   c.Unlock()
   return nil
 }
@@ -55,11 +51,7 @@ func (c *Circular) Dequeue() (interface{}, bool) {
     return nil, false
   }
   item := c.Items[c.Head]
-  if c.Head == c.cap {
-    c.Head = 0
-  } else {
-    c.Head++
-  }
+  c.Head = int(math.Mod(float64(c.Head + 1), float64(cap(c.Items))))
   c.Unlock()
   return item, true
 }
@@ -68,7 +60,7 @@ func (c *Circular) Dequeue() (interface{}, bool) {
 // queue. If the queue is empty, a false will be returned.
 func (c *Circular) Peek() (interface{}, bool) {
   c.Lock()
-  defer c.Unlock()
+  c.Unlock()
   if c.isEmpty() {
     return nil, false
   }
