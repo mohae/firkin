@@ -38,11 +38,11 @@ func TestCircularQ(t *testing.T) {
     for _, v := range test.items {
       _ = cq.Enqueue(v)
     }
-    if cq.head != test.initHead {
-      t.Errorf("%d initial: expected head to be %d, got %d", i, test.initHead, cq.head)
+    if cq.Head != test.initHead {
+      t.Errorf("%d initial: expected Head to be %d, got %d", i, test.initHead, cq.Head)
     }
-    if cq.tail != test.initTail {
-      t.Errorf("%d initial: expected tail to be %d, got %d", i, test.initTail, cq.tail)
+    if cq.Tail != test.initTail {
+      t.Errorf("%d initial: expected Tail to be %d, got %d", i, test.initTail, cq.Tail)
     }
     if cq.IsEmpty() != test.initIsEmpty {
       t.Errorf("%d initial: expected isEmpty to be %t, got %t", i, test.initIsEmpty, cq.IsEmpty())
@@ -59,11 +59,11 @@ func TestCircularQ(t *testing.T) {
         t.Errorf("%d: dequeue item %d: expected %v got %v", i, j, v, val)
       }
     }
-    if cq.head != test.dequeueHead {
-      t.Errorf("%d dequeue: expected head to be %d, got %d", i, test.dequeueHead, cq.head)
+    if cq.Head != test.dequeueHead {
+      t.Errorf("%d dequeue: expected Head to be %d, got %d", i, test.dequeueHead, cq.Head)
     }
-    if cq.tail != test.dequeueTail {
-      t.Errorf("%d dequeue: expected tail to be %d, got %d", i, test.dequeueTail, cq.tail)
+    if cq.Tail != test.dequeueTail {
+      t.Errorf("%d dequeue: expected Tail to be %d, got %d", i, test.dequeueTail, cq.Tail)
     }
     if cq.IsEmpty() != test.dequeueIsEmpty {
       t.Errorf("%d dequeue: expected isEmpty to be %t, got %t", i, test.dequeueIsEmpty, cq.IsEmpty())
@@ -83,11 +83,11 @@ func TestCircularQ(t *testing.T) {
     if err == nil && test.err != "" {
       t.Errorf("%d enqueue: expected error an error: %q, got none", i, test.err)
     }
-    if cq.head != test.enqueueHead {
-      t.Errorf("%d enqueue: expected head to be %d, got %d", i, test.enqueueHead, cq.head)
+    if cq.Head != test.enqueueHead {
+      t.Errorf("%d enqueue: expected Head to be %d, got %d", i, test.enqueueHead, cq.Head)
     }
-    if cq.tail != test.enqueueTail {
-      t.Errorf("%d enqueue: expected tail to be %d, got %d", i, test.enqueueTail, cq.tail)
+    if cq.Tail != test.enqueueTail {
+      t.Errorf("%d enqueue: expected Tail to be %d, got %d", i, test.enqueueTail, cq.Tail)
     }
     if cq.IsEmpty() != test.enqueueIsEmpty {
       t.Errorf("%d enqueue: expected isEmpty to be %t, got %t", i, test.enqueueIsEmpty, cq.IsEmpty())
