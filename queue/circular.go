@@ -60,7 +60,7 @@ func (c *Circular) Dequeue() (interface{}, bool) {
 // queue. If the queue is empty, a false will be returned.
 func (c *Circular) Peek() (interface{}, bool) {
   c.Lock()
-  c.Unlock()
+  defer c.Unlock()
   if c.isEmpty() {
     return nil, false
   }
@@ -70,12 +70,8 @@ func (c *Circular) Peek() (interface{}, bool) {
 // IsEmpty returns whether or not the queue is empty
 func (c *Circular) IsEmpty() bool {
   c.Lock()
-  if c.Head == c.Tail {
-    c.Unlock()
-    return true
-  }
-  c.Unlock()
-  return false
+  defer c.Unlock()
+  return c.isEmpty()
 }
 
 // isEmpty is an unexported version that expects the caller to handle locking.
@@ -90,12 +86,8 @@ func (c *Circular) isEmpty() bool {
 // IsFull returns whether or not the queue is full
 func (c *Circular) IsFull() bool {
   c.Lock()
-  if c.Head != int(math.Mod(float64(c.Tail + 1), float64(cap(c.Items)))) {
-    c.Unlock()
-    return false
-  }
-  c.Unlock()
-  return true
+  defer  c.Unlock()
+  return c.isFull()
 }
 
 // isFull is an unexported version that expects the caller to handle locking.
