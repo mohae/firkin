@@ -115,6 +115,16 @@ func (c *Circular) isFull() bool {
   return true
 }
 
+// Len returns the current length of the queue (# of items in queue)
+func (c *Circular) Len() int {
+    c.Lock()
+    defer c.Unlock()
+    if c.Tail >= c.Head {
+      return c.Tail - c.Head
+    }
+    return c.Tail + len(c.Items) - c.Head
+}
+
 // returns the Size of the Queue
 func (c *Circular) Size() int {
   return c.cap

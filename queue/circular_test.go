@@ -19,19 +19,21 @@ func TestCircularQ(t *testing.T) {
     dequeueTail int
     dequeueIsFull bool
     dequeueIsEmpty bool
+    dequeueLen int
     enqueue []int
     enqueueHead int
     enqueueTail int
     enqueueIsFull bool
     enqueueIsEmpty bool
+    enqueueLen int
     err string
   }{
-    {2, []int{}, 3, 0, 0, false, true, []int{}, false, 0, 0, false, true, []int{}, 0, 0, false, true, ""},
-    {2, []int{0}, 3, 0, 1, false, false, []int{0}, true, 1, 1, false, true, []int{1, 2}, 1, 0, true, false, ""},
-    {2, []int{0, 1}, 3, 0, 2, true, false, []int{0, 1}, true, 2, 2, false, true, []int{2, 3}, 2, 1, true, false, ""},
-    {2, []int{0, 1}, 3, 0, 2, true, false, []int{0, 1}, true, 2, 2, false, true, []int{2, 3, 4}, 2, 1, true, false, "queue full: cannot enqueue 4"},
-    {4, []int{0, 1, 2, 3}, 5, 0, 4, true, false, []int{0, 1, 2}, true, 3, 4, false, false, []int{4, 5, 6}, 3, 2, true, false, ""},
-    {4, []int{0, 1, 2, 3}, 5, 0, 4, true, false, []int{0, 1, 2, 3}, true, 4, 4, false, true, []int{}, 4, 4, false, true, ""},
+    {2, []int{}, 3, 0, 0, false, true, []int{}, false, 0, 0, false, true, 0, []int{}, 0, 0, false, true, 0, ""},
+    {2, []int{0}, 3, 0, 1, false, false, []int{0}, true, 1, 1, false, true, 0, []int{1, 2}, 1, 0, true, false, 2, ""},
+    {2, []int{0, 1}, 3, 0, 2, true, false, []int{0, 1}, true, 2, 2, false, true, 0, []int{2, 3}, 2, 1, true, false, 2, ""},
+    {2, []int{0, 1}, 3, 0, 2, true, false, []int{0, 1}, true, 2, 2, false, true, 0, []int{2, 3, 4}, 2, 1, true, false, 2, "queue full: cannot enqueue 4"},
+    {4, []int{0, 1, 2, 3}, 5, 0, 4, true, false, []int{0, 1, 2}, true, 3, 4, false, false, 1, []int{4, 5, 6}, 3, 2, true, false, 4, ""},
+    {4, []int{0, 1, 2, 3}, 5, 0, 4, true, false, []int{0, 1, 2, 3}, true, 4, 4, false, true, 0, []int{}, 4, 4, false, true, 0, ""},
   }
   for i, test := range tests {
     cq := NewCircularQ(test.size)
@@ -71,6 +73,9 @@ func TestCircularQ(t *testing.T) {
     if cq.IsFull() != test.dequeueIsFull {
       t.Errorf("%d dequeue: expected isFull to be %t, got %t", i, test.dequeueIsFull, cq.IsFull())
     }
+    if cq.Len() != test.dequeueLen {
+      t.Errorf("%d dequeue: expected len to be %d, got %d", i, test.dequeueLen, cq.Len())
+    }
     var err error
     for j, v := range test.enqueue {
       err = cq.Enqueue(v)
@@ -94,6 +99,9 @@ func TestCircularQ(t *testing.T) {
     }
     if cq.IsFull() != test.enqueueIsFull {
       t.Errorf("%d enqueue: expected isFull to be %t, got %t", i, test.enqueueIsFull, cq.IsFull())
+    }
+    if cq.Len() != test.enqueueLen {
+      t.Errorf("%d enqueue: expected len to be %d, got %d", i, test.enqueueLen, cq.Len())
     }
   }
 }
