@@ -29,8 +29,10 @@ Supported operations:
 Enqueue(item)
 Dequeue() (item bool)
 Peek() (item bool)
-IsFull() bool
 IsEmpty() bool
+IsFull() bool
+Len() int
+Cap() int
 ```
 
 ### Unbounded queue
@@ -40,6 +42,7 @@ The design goals of this queue were:
 * a queue that does not grow unnecessarily, i.e. if a certain percentage of the items in the queue has been dequeued, shift the remaining items in the queue forward so that new items can be enqueued without forcing a growth in the queue
 * is safe for concurrent usage
 * can act as a bounded queue
+* a queue from which memory can be reclaimed.
 
 Reallocations are minimized by setting the initial capacity of the queue to a reasonable value for your use case.  Once a queue is grows, it does not shrink, even when the queue is emptied. Queue growth also results in any items in the queue being shifted forward in the slice to eliminate empty spaces in the front of the slice.
 
@@ -49,11 +52,11 @@ For bounded queues, if the current queue length is equal to its capacity and the
 
 Getting a unbounded queue:
 
-    q := NewQueue(initialSize)
+    q := queue.NewQueue(initialSize)
 
 or
 
-    q := NewQ(initialSize)
+    q := queue.NewQ(initialSize)
 
 Operations supported:
 ```
@@ -74,11 +77,11 @@ A stack is created by calling `NewStack(size, bounded)`. The `size` is the initi
 
 Getting a bounded stack with 256 slots:
 
-    s := dq.NewStack(256, true)
+    s := stack.NewStack(256, true)
 
 Getting an unboudned stack with an initial capacity of 256 slots:
 
-    s := dq.NewStack(256, false)
+    s := stack.NewStack(256, false)
 
 Operations supported:
 ```
@@ -86,13 +89,35 @@ Push(item) error
 Pop() (interface{}, bool)
 Peek() (interface{}, bool)
 IsEmpty() bool
-Len() bool
+IsFull() bool
+Len() int
+Cap() int
 Reset()
 ```
 
 For bounded queues, an error will occur on `Push()` operations if the queue is full.
 
-`Pop()` and `Peek()` operations return both a value and a bool. If the stack is empty, an interface containing nil and false will be returned, otherwise the value and true will be returned.
+`Pop()` and `Peek()` operations return both a value and a bool.  If the stack is empty, an interface containing nil and false will be returned, otherwise the value and true will be returned.
+
+## Buffer
+Buffer implements a ring buffer using a `[]interface{}`.  This is a wrapper to quueue.Circular.  See that for more infomration.
+
+When full, instead of erroring, like the ciruclar queue, the ring buffer evicts the oldest item in the buffer and enqueues the new item at the back of the buffer.
+
+Getting a ring buffer with 256 slots:
+
+    ring := buffer.Ring(256)
+
+Operations supported:
+```
+Enqueue(interface{}) error
+Dequeue() (interface{}, bool)
+Peek() (interface{}, bool)
+IsEmpty() bool
+IsFull() bool
+Len() int
+Cap() int
+Reset()
 
 ## License
 This code is licensed under the MIT license. For more information, please check the included LICENSE file.
