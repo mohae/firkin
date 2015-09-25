@@ -1,17 +1,21 @@
-dq
-=====
-Dq got its name from dynamic queue, which was what this package originally implemented. The name remains the same.
+firkin
+======
+Firkin is a small package of containers.
 
-DQ implements a queue, either bounded or unbounded.
+Firkin implements a queue, either bounded or unbounded, as a ring queue.
 
-DQ implements a stack, either bounded or unbounded.
+Firkin implements a stack, either bounded or unbounded.
+
+Firkin implements a ring buffer.
 
 All implementations are thread-safe.
 
 ## Queue
 There are two queue implementations: unboundeed and bounded.  For each, the queue itself is an `[]interface{}`.  All queue methods are thread-safe.
 
-Queues can be resized by using the resize method: `Resize(newSize)`.  The newSize must be equal to or larger than both 1.25 * the number of elements in the queue or the intial queue capacity, whichever is larger.  Use `0` as the newSize if you want either 1.25 * the number of elements in the queue or the intial queue capacity used.  The queue's new size is returned.
+Queues can be resized by using the resize method: `Resize(newSize)`.  The newSize must be equal to or larger than both 1.25 * the number of elements in the queue or the intial queue capacity, whichever is larger.  Use `0` as the newSize if you want either 1.25 * the number of elements in the queue or the intial queue capacity used.  Memory may be reclaimed during a Resize operation.  Memory may also be allocated during a Resize operation.  The queue's new size is returned.
+
+Queues can be reset. Queue reset causes all items in the queue to be lost. A reset will not reclaim memory.
 
 Supported operations:
 ```
@@ -42,6 +46,8 @@ Getting a circular queue:
     q := NewCircularQ(size)
 
 For bounded queues, if the current queue length is equal to its capacity and there is an item to enqueue, the queue is checked to see if any elements have been dequeued.  If there is space at the beginning of the queue, all items are shifted forward, making room for the new item.  If the queue is full, an error is returned.
+
+Bounded queues can be resized using the `Resize(size)` method.  Bounded queues do not automatically resize.  Resize operations allow the queue to grow or shrink. For a buffer to successfully shrink, there most be less items left in the buffer than the new buffer size.  During resize operations, any items in the buffer will be copied to a tmp buffer and then recopied to the resized queue.
 
 ### Unbounded queue
 The design goals of this queue were:
@@ -89,14 +95,14 @@ Reset()
 Resize(int) int
 ```
 
-### Bounded queue
+### Bounded Stack
 For bounded queues, an error will occur on `Push()` operations if the queue is full.
 
 Getting a bounded stack with 256 slots:
 
     s := stack.NewStack(256, true)
 
-### Unbounded queue
+### Unbounded Stack
 Getting an unbound stack with an initial capacity of 256 slots:
 
     s := stack.NewStack(256, false)
@@ -104,7 +110,7 @@ Getting an unbound stack with an initial capacity of 256 slots:
 ## Buffer
 Buffer implements a ring buffer using a `[]interface{}`.  This is a wrapper to queue.Circular.  See that for more infomration.
 
-When full, instead of erroring, like the circular queue, the ring buffer evicts the oldest item in the buffer and enqueues the new item at the back of the buffer.
+When full, instead of creating an error, like the circular queue, the ring buffer evicts the oldest item in the buffer and enqueues the new item at the back of the buffer.
 
 Getting a ring buffer with 256 slots:
 
