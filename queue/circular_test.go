@@ -4,7 +4,7 @@ import (
   "testing"
 )
 
-func TestCircularQ(t *testing.T) {
+func TestCircular(t *testing.T) {
   tests := []struct{
     size int
     items []int
@@ -36,7 +36,7 @@ func TestCircularQ(t *testing.T) {
     {4, []int{0, 1, 2, 3}, 5, 0, 4, true, false, []int{0, 1, 2, 3}, true, 4, 4, false, true, 0, []int{}, 4, 4, false, true, 0, ""},
   }
   for i, test := range tests {
-    cq := NewCircularQ(test.size)
+    cq := NewCircular(test.size)
     for _, v := range test.items {
       _ = cq.Enqueue(v)
     }
@@ -103,5 +103,99 @@ func TestCircularQ(t *testing.T) {
     if cq.Len() != test.enqueueLen {
       t.Errorf("%d enqueue: expected len to be %d, got %d", i, test.enqueueLen, cq.Len())
     }
+  }
+}
+
+func TestCircularResetResize(t *testing.T) {
+  tests := []struct{
+    size int
+    init int
+    dequeue int
+    dequeueOk bool
+    enqueue int
+    enqueueErr string
+    resetHead int
+    resetTail int
+    resetLen int
+    resetCap int
+    resize int
+    resizeHead int
+    resizeTail int
+    resizeLen int
+    resizeCap int
+  }{
+    {4, 0, 1, false, 0, "", 0, 0, 0, 4, 0, 0, 0, 0, 4},
+    {4, 0, 0, false, 1, "", 0, 0, 0, 4, 0, 0, 1, 1, 4},
+    {4, 1, 0, false, 0, "", 0, 0, 0, 4, 0, 0, 1, 1, 4},
+    {4, 1, 0, false, 1, "", 0, 0, 0, 4, 0, 0, 2, 2, 4},
+    {4, 1, 1, true, 0, "", 0, 0, 0, 4, 0, 1, 1, 0, 4},
+    //
+    {4, 1, 1, true, 3, "", 0, 0, 0, 4, 0, 1, 4, 3, 4},
+    {4, 1, 1, true, 4, "", 0, 0, 0, 4, 0, 1, 0, 4, 4},
+    {4, 1, 2, false, 0, "", 0, 0, 0, 4, 0, 1, 1, 0, 4},
+    {4, 3, 0, false, 0, "", 0, 0, 0, 4, 0, 0, 3, 3, 4},
+    {4, 3, 0, false, 2, "queue full: cannot enqueue 1", 0, 0, 0, 4, 2, 0, 4, 4, 4},
+    //
+    {4, 3, 1, true, 1, "", 0, 0, 0, 8, 8, 0, 3, 3, 8},
+    {4, 3, 1, true, 4, "queue full: cannot enqueue 3", 0, 0, 0, 8, 8, 0, 4, 4, 8},
+    {4, 4, 0, false, 0, "", 0, 0, 0, 4, 0, 0, 4, 4, 4},
+    {4, 4, 0, false, 2, "queue full: cannot enqueue 1", 0, 0, 0, 4, 0, 0, 4, 4, 4},
+    {4, 4, 1, true, 0, "", 0, 0, 0, 4, 0, 1, 4, 3, 4},
+    //
+    {4, 4, 1, true, 1, "", 0, 0, 0, 4, 0, 1, 0, 4, 4},
+    {4, 4, 2, true, 2, "", 0, 0, 0, 4, 0, 2, 1, 4, 4},
+    {4, 4, 1, true, 4, "queue full: cannot enqueue 3", 0, 0, 0, 4, 0, 1, 0, 4, 4},
+  }
+  for i, test := range tests {
+    q := NewCircular(test.size)
+
+    for j := 0; j < test.init; j++ {
+      _ = q.Enqueue(j)
+    }
+    var ok bool
+    for j := 0; j < test.dequeue; j++ {
+      _, ok = q.Dequeue()
+    }
+    if ok != test.dequeueOk {
+      t.Errorf("%d: expected dequeue to be %t, got %t", i, test.dequeueOk, ok)
+      continue
+    }
+    var err error
+    for j := 0; j < test.enqueue; j++ {
+      err = q.Enqueue(j)
+    }
+    if err != nil && err.Error() != test.enqueueErr {
+      t.Errorf("%d: expected enqueue error to be %q, got %q", i, test.enqueueErr, err.Error())
+    }
+    if err == nil && test.enqueueErr != "" {
+      t.Errorf("%d: expected enqueue error to bet %q, got nil", i, test.enqueueErr)
+    }
+    q.Resize(test.resize)
+    if q.Head != test.resizeHead {
+      t.Errorf("%d: post resize, expected head pos to be %d, got %d", i, test.resizeHead, q.Head)
+    }
+    if q.Tail != test.resizeTail {
+      t.Errorf("%d: post resize, expected tail pos to be %d, got %d", i, test.resizeTail, q.Tail)
+    }
+    if q.Len() != test.resizeLen {
+      t.Errorf("%d: post resize, expected len to be %d, got %d", i, test.resizeLen, q.Len())
+    }
+    if q.Cap() != test.resizeCap {
+      t.Errorf("%d: post resize, expected cap to be %d, got %d", i, test.resizeCap, q.Cap())
+    }
+    q.Reset()
+    if q.Head != test.resetHead {
+      t.Errorf("%d: post reset, expected head pos to be %d, got %d", i, test.resetHead, q.Head)
+    }
+    if q.Tail != test.resetTail {
+      t.Errorf("%d: post reset, expected tail pos to be %d, got %d", i, test.resetTail, q.Tail)
+    }
+    if q.Len() != test.resetLen {
+      t.Errorf("%d: post reset, expected len to be %d, got %d", i, test.resetLen, q.Len())
+    }
+    if q.Cap() != test.resetCap {
+      t.Errorf("%d: post reset, expected cap to be %d, got %d", i, test.resetCap, q.Cap())
+    }
+
   }
 }

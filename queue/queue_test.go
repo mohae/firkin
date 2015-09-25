@@ -6,11 +6,11 @@ import (
 func TestNew(t *testing.T) {
 	q := NewQ(10)
 	if q.Cap() != 10 {
-		t.Errorf("expected 10, got %d", cap(q.items))
+		t.Errorf("expected 10, got %d", cap(q.Items))
 	}
 	q = NewQueue(100)
 	if q.Cap() != 100 {
-		t.Errorf("expected 100, got %d", cap(q.items))
+		t.Errorf("expected 100, got %d", cap(q.Items))
 	}
 }
 
@@ -35,17 +35,17 @@ func TestQueueing(t *testing.T) {
 		}
 		// check that the items are as expected:
 		if q.Len() != test.expectedLen {
-			t.Errorf("%d: expected %d items in queue, got %d", i, test.expectedLen, len(q.items))
+			t.Errorf("%d: expected %d items in queue, got %d", i, test.expectedLen, len(q.Items))
 		}
 		if q.Cap() != test.expectedCap {
-			t.Errorf("%d: expected queue cap to be %d, got %d", i, test.expectedCap, cap(q.items))
+			t.Errorf("%d: expected queue cap to be %d, got %d", i, test.expectedCap, cap(q.Items))
 		}
-		if q.head != test.headPos {
-			t.Errorf("%d: expected head to be at pos %d, got %d", i, test.headPos, q.head)
+		if q.Head != test.headPos {
+			t.Errorf("%d: expected head to be at pos %d, got %d", i, test.headPos, q.Head)
 		}
-		for j := 0; j < len(q.items); j++ {
-			if q.items[j] != test.items[j] {
-				t.Errorf("%d: expected value of index %d to be %d, got %d", i, j, test.items[j], q.items[j])
+		for j := 0; j < len(q.Items); j++ {
+			if q.Items[j] != test.items[j] {
+				t.Errorf("%d: expected value of index %d to be %d, got %d", i, j, test.items[j], q.Items[j])
 			}
 		}
 
@@ -55,8 +55,8 @@ func TestQueueing(t *testing.T) {
 			t.Errorf("%d: expected %d, got %d", i, test.items[0], next)
 			continue
 		}
-		if q.head != 1 {
-			t.Errorf("%d: expected head to point to 1, got %d", i, q.head)
+		if q.Head != 1 {
+			t.Errorf("%d: expected head to point to 1, got %d", i, q.Head)
 		}
 	}
 }
@@ -91,8 +91,8 @@ func TestQDequeueEnqueue(t *testing.T) {
 		for _, v := range test.items {
 			_ = q.Enqueue(v)
 		}
-		if q.head != test.headPos {
-			t.Errorf("%d: post queue population, expected head pos to be %d, got %d", test.headPos, q.head)
+		if q.Head != test.headPos {
+			t.Errorf("%d: post queue population, expected head pos to be %d, got %d", test.headPos, q.Head)
 		}
 		if q.Len() != test.expectedLen {
 			t.Errorf("%d: post queue population, expected len to be %d got %d", i, test.expectedLen, q.Len())
@@ -107,23 +107,23 @@ func TestQDequeueEnqueue(t *testing.T) {
 				t.Errorf("%d: dequeue: expected %v, got %v", i,test.dequeueVals[i], v)
 			}
 		}
-		if q.head != test.dequeueCnt {
-			t.Errorf("%d: post deuque: expected head to point to %d, got %d", i, test.dequeueCnt, q.head)
+		if q.Head != test.dequeueCnt {
+			t.Errorf("%d: post deuque: expected head to point to %d, got %d", i, test.dequeueCnt, q.Head)
 		}
 		// peek stuff
 		v, _ := q.Peek()
 		if v.(int) != test.expectedPeek {
 			t.Errorf("%d: post peek: expected peek to return %d, got %d", i, test.expectedPeek, v.(int))
 		}
-		if q.head != test.postPeekHeadPos {
-			t.Errorf("%d: post peek: expected head to be at pos %d, got %d", i, test.postPeekHeadPos, q.head)
+		if q.Head != test.postPeekHeadPos {
+			t.Errorf("%d: post peek: expected head to be at pos %d, got %d", i, test.postPeekHeadPos, q.Head)
 		}
 		// enqueue the next items; should not grow, should just shift the items
 		for _, v := range test.enqueueItems {
 			q.Enqueue(v)
 		}
-		if q.head != 0 {
-			t.Errorf("%d post enqueue: expected head to be at pos 0, got %d", i, q.head)
+		if q.Head != 0 {
+			t.Errorf("%d post enqueue: expected head to be at pos 0, got %d", i, q.Head)
 		}
 		if q.Len() != test.postEnqueueLen {
 			t.Errorf("%d post enqueue: expected tail to be at %d, got %d", i, test.postEnqueueLen, q.Len())
@@ -229,14 +229,29 @@ func TestDequeuePeekErr(t *testing.T) {
 	}
 }
 
-func TestQueueReset(t *testing.T) {
+func TestQueueResetResize(t *testing.T) {
 	tests := []struct{
 		size int
 		enqueue int
+		dequeue int
 		cap int
+		resize int
+		expectedLen int
+		expectedCap int
 	}{
-		{2, 2, 2},
-		{2, 5, 8},
+	  {4, 0, 0, 4, 0, 0, 4},
+		{2, 2, 0, 2, 0, 2, 2},
+		{2, 2, 2, 2, 0, 0, 2},
+		{4, 2, 2, 4, 0, 0, 4},
+		{4, 2, 0, 4, 0, 2, 4},
+		{4, 1, 0, 4, 0, 1, 4},
+		{4, 2, 1, 4, 0, 1, 4},
+		{2, 5, 0, 8, 0, 5, 6},
+		{2, 5, 5, 8, 0, 0, 2},
+		{2, 5, 5, 8, 4, 0, 4},
+		{2, 6, 1, 8, 0, 5, 6},
+		{2, 6, 1, 8, 3, 5, 6},
+		{2, 6, 1, 8, 7, 5, 7},
 	}
 	for i, test := range tests {
 		q := NewQ(test.size)
@@ -249,15 +264,44 @@ func TestQueueReset(t *testing.T) {
 		if q.Cap() != test.cap {
 			t.Errorf("%d: expected queue cap to be %d, got %d", i, test.cap, q.Cap())
 		}
+		for j := 0; j < test.dequeue; j++ {
+			_, _ = q.Dequeue()
+		}
 		q.Reset()
 		if q.Len() != 0 {
 			t.Errorf("%d: after Reset(), expected queue len to be 0, got %d", i, q.Len())
 		}
-		if q.head != 0 {
-			t.Errorf("%d: after Reset(), expected queue head to be at pos 0, was at pos %d", i, q.head)
+		if q.Head != 0 {
+			t.Errorf("%d: after Reset(), expected queue head to be at pos 0, was at pos %d", i, q.Head)
 		}
-		if q.Cap() != test.size {
-			t.Errorf("%d: after Reset(), expected queue cap to be %d, got %d", i, test.size, q.Cap())
+		if q.Cap() != test.cap {
+			t.Errorf("%d: after Reset(), expected queue cap to be %d, got %d", i, test.cap, q.Cap())
+		}
+	}
+
+	for i, test := range tests {
+		q := NewQ(test.size)
+		for j := 0; j < test.enqueue; j++ {
+			_ = q.Enqueue(j)
+		}
+		if q.Len() != test.enqueue {
+			t.Errorf("%d: expected queue len to be %d, got %d", i, test.enqueue, q.Len())
+		}
+		if q.Cap() != test.cap {
+			t.Errorf("%d: expected queue cap to be %d, got %d", i, test.cap, q.Cap())
+		}
+		for j := 0; j < test.dequeue; j++ {
+			_, _ = q.Dequeue()
+		}
+		q.Resize(test.resize)
+		if q.Len() != test.expectedLen{
+			t.Errorf("%d: after Resize(), expected queue len to be %d, got %d", i, test.expectedLen,  q.Len())
+		}
+		if q.Head != 0 {
+			t.Errorf("%d: after Resize(), expected queue head to be at pos 0, was at pos %d", i, q.Head)
+		}
+		if q.Cap() != test.expectedCap {
+			t.Errorf("%d: after Resize(), expected queue cap to be %d, got %d", i, test.expectedCap, q.Cap())
 		}
 	}
 }

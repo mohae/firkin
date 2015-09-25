@@ -13,7 +13,7 @@ type Ring struct {
 
 // NewRing returns a ring buffer initalized with 'size' slots.
 func NewRing(size int) *Ring {
-  return &Ring{*queue.NewCircularQ(size)}
+  return &Ring{*queue.NewCircular(size)}
 }
 
 // Enqueue enques an item, If the buffer is full, the oldest item will

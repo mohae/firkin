@@ -6,8 +6,8 @@ import (
 
 func TestRingBuffer(t *testing.T) {
   r := NewRing(5)
-  if r.Size() != 5 {
-        t.Errorf("Expected ring buffers cap to be 5, got %d", r.Size())
+  if r.Cap() != 5 {
+        t.Errorf("Expected ring buffers cap to be 5, got %d", r.Cap())
   }
 }
 
