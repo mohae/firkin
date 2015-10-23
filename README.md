@@ -1,8 +1,9 @@
 firkin
 ======
+
 Firkin is a small package of containers.
 
-Firkin implements a queue, either bounded or unbounded, as a ring queue.
+Firkin implements queues: unbounded, circular queue, and heap based priority queue.
 
 Firkin implements a stack, either bounded or unbounded.
 
@@ -74,6 +75,8 @@ Additional supported operations:
 ```
 SetShiftPercent(int)
 ```
+### Priority queue
+The priority queue implementation uses a heap and is based on the std lib's `container/heap` [example priority queue implementation](https://golang.org/pkg/container/heap#example__priorityQueue).  This implementation adds locking.
 
 ## Stack
 This implements a stack that can either be bounded or unbounded. The stack itself is an `[]interface{}`.
