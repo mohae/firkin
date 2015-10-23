@@ -1,5 +1,6 @@
 firkin
 ======
+[![Build Status](https://travis-ci.org/mohae/firkin.png)](https://travis-ci.org/mohae/firkin)
 
 Firkin is a small package of containers.
 
