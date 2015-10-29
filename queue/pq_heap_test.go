@@ -47,7 +47,7 @@ func TestPQHeap(t *testing.T) {
 	// Take the items out; they arrive in decreasing priority order.
 	expected := []struct {
 		priority int
-		value string
+		value    string
 	}{
 		{5, "grapefruit"},
 		{4, "pear"},
@@ -58,7 +58,7 @@ func TestPQHeap(t *testing.T) {
 	for pq.Len() > 0 {
 		item := heap.Pop(&pq.items).(*Item)
 		if item.priority != expected[i].priority || item.value != expected[i].value {
-				t.Errorf("Expected %v got %v", expected[i], item)
+			t.Errorf("Expected %v got %v", expected[i], item)
 		}
 		i++
 	}

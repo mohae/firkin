@@ -1,4 +1,5 @@
 package queue
+
 import (
 	"testing"
 )
@@ -64,23 +65,23 @@ func TestQueueing(t *testing.T) {
 // Tests Enqueue/Dequeue/Enqueue, shifting, and growth is properly handled
 func TestQDequeueEnqueue(t *testing.T) {
 	tests := []struct {
-		size        int
-		headPos     int
-		expectedLen int
-		expectedCap int
-		expectedPeek int
-		postPeekHeadPos int
-		dequeueCnt  int
-		dequeueVals []interface{}
+		size               int
+		headPos            int
+		expectedLen        int
+		expectedCap        int
+		expectedPeek       int
+		postPeekHeadPos    int
+		dequeueCnt         int
+		dequeueVals        []interface{}
 		postDequeueHeadPos int
-		postDequeueLen int
-		items       []interface{}
-		enqueueItems      []interface{}
-		postEnqueueLen int
-		postEnqueueCap int
+		postDequeueLen     int
+		items              []interface{}
+		enqueueItems       []interface{}
+		postEnqueueLen     int
+		postEnqueueCap     int
 	}{
 		{size: 10, headPos: 0, expectedLen: 10, expectedCap: 10, expectedPeek: 5, postPeekHeadPos: 5,
-		 	dequeueCnt: 5, dequeueVals: []interface{}{0, 1, 2, 3, 4}, postDequeueHeadPos: 5,
+			dequeueCnt: 5, dequeueVals: []interface{}{0, 1, 2, 3, 4}, postDequeueHeadPos: 5,
 			postDequeueLen: 5, items: []interface{}{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
 			enqueueItems: []interface{}{10, 11}, postEnqueueLen: 7, postEnqueueCap: 10},
 	}
@@ -102,9 +103,9 @@ func TestQDequeueEnqueue(t *testing.T) {
 		}
 		// dequeue 5 items
 		for i := 0; i < test.dequeueCnt; i++ {
-			v , _ := q.Dequeue()
+			v, _ := q.Dequeue()
 			if v != test.dequeueVals[i] {
-				t.Errorf("%d: dequeue: expected %v, got %v", i,test.dequeueVals[i], v)
+				t.Errorf("%d: dequeue: expected %v, got %v", i, test.dequeueVals[i], v)
 			}
 		}
 		if q.Head != test.dequeueCnt {
@@ -135,8 +136,8 @@ func TestQDequeueEnqueue(t *testing.T) {
 }
 
 func TestQSetShiftPercentage(t *testing.T) {
-	tests := []struct{
-		percent int
+	tests := []struct {
+		percent  int
 		expected int
 	}{
 		{-1, 0},
@@ -157,9 +158,9 @@ func TestQSetShiftPercentage(t *testing.T) {
 }
 
 func TestQIsEmptyFull(t *testing.T) {
-	tests := []struct{
-		size int
-		items []int
+	tests := []struct {
+		size    int
+		items   []int
 		isEmpty bool
 	}{
 		{4, []int{}, true},
@@ -180,13 +181,13 @@ func TestQIsEmptyFull(t *testing.T) {
 }
 
 func TestDequeuePeekErr(t *testing.T) {
-	tests := []struct{
-		size int
-		items []int
+	tests := []struct {
+		size     int
+		items    []int
 		retItems []int
-		retOk []bool
-		isEmpty bool
-		isFull bool
+		retOk    []bool
+		isEmpty  bool
+		isFull   bool
 	}{
 		{2, []int{0, 1, 2, 3, 4}, []int{}, []bool{}, false, false},
 		{2, []int{0, 1, 2, 3, 4}, []int{0, 1, 2, 3, 4}, []bool{true, true, true, true, true}, true, false},
@@ -230,16 +231,16 @@ func TestDequeuePeekErr(t *testing.T) {
 }
 
 func TestQueueResetResize(t *testing.T) {
-	tests := []struct{
-		size int
-		enqueue int
-		dequeue int
-		cap int
-		resize int
+	tests := []struct {
+		size        int
+		enqueue     int
+		dequeue     int
+		cap         int
+		resize      int
 		expectedLen int
 		expectedCap int
 	}{
-	  {4, 0, 0, 4, 0, 0, 4},
+		{4, 0, 0, 4, 0, 0, 4},
 		{2, 2, 0, 2, 0, 2, 2},
 		{2, 2, 2, 2, 0, 0, 2},
 		{4, 2, 2, 4, 0, 0, 4},
@@ -294,8 +295,8 @@ func TestQueueResetResize(t *testing.T) {
 			_, _ = q.Dequeue()
 		}
 		q.Resize(test.resize)
-		if q.Len() != test.expectedLen{
-			t.Errorf("%d: after Resize(), expected queue len to be %d, got %d", i, test.expectedLen,  q.Len())
+		if q.Len() != test.expectedLen {
+			t.Errorf("%d: after Resize(), expected queue len to be %d, got %d", i, test.expectedLen, q.Len())
 		}
 		if q.Head != 0 {
 			t.Errorf("%d: after Resize(), expected queue head to be at pos 0, was at pos %d", i, q.Head)

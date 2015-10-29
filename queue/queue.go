@@ -46,7 +46,7 @@ type Queue struct {
 // NewQ is a convenience wrapper to NewQ().
 func NewQ(size int) *Queue {
 	return NewQueue(size)
-	}
+}
 
 // NewQueue returns an empty queue with an initial capacity equal to the
 // recieved size.
@@ -61,17 +61,17 @@ func NewQueue(size int) *Queue {
 // Valid range of values are 0-100, inclusive. Vaues < 0 are set to 0 and
 // values > 100 are set to 100.
 func (q *Queue) SetShiftPercent(i int) {
-		q.Lock()
-		defer q.Unlock()
-		if i < 0 {
-			q.shiftPercent = 0
-			return
-		}
-		if i > 100 {
-			q.shiftPercent = 100
-			return
-		}
-		q.shiftPercent = i
+	q.Lock()
+	defer q.Unlock()
+	if i < 0 {
+		q.shiftPercent = 0
+		return
+	}
+	if i > 100 {
+		q.shiftPercent = 100
+		return
+	}
+	q.shiftPercent = i
 }
 
 // Enqueue: adds an item to the queue. If adding the item requires growing
@@ -128,6 +128,7 @@ func (q *Queue) isEmpty() bool {
 	}
 	return false
 }
+
 // IsFull returns false; this is implemented to fulfill Queuer but a dynamic
 // queue will never be full.
 func (q *Queue) IsFull() bool {
@@ -178,8 +179,8 @@ func (q *Queue) Reset() {
 // with space at the front are shifted to the front.
 func (q *Queue) Resize(size int) int {
 	q.Lock()
-	i := int(math.Mod(float64(len(q.Items)), float64(cap(q.Items))) * 1.25) - q.Head
-	if i  < q.InitCap {
+	i := int(math.Mod(float64(len(q.Items)), float64(cap(q.Items)))*1.25) - q.Head
+	if i < q.InitCap {
 		i = q.InitCap
 	}
 	if size > i {
@@ -187,7 +188,7 @@ func (q *Queue) Resize(size int) int {
 	}
 	tmp := make([]interface{}, 0, i)
 	// if necessary, shift Items to front.
-	if  q.Head > 0 || len(q.Items) > 0 {
+	if q.Head > 0 || len(q.Items) > 0 {
 		tmp = append(tmp, q.Items[q.Head:]...)
 		q.Head = 0
 	}
