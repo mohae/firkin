@@ -1,3 +1,4 @@
+package queue
 // Copyright 2015 by Joel Scoble
 //
 // This implementation of a priority queue using a heap is based on the code
@@ -9,7 +10,6 @@
 // Copyright 2012 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-package queue
 
 import (
 	"container/heap"
@@ -26,10 +26,11 @@ type Item struct {
 
 // A HeapPriority implements heap.Interface and holds Items.
 type HeapPriority struct {
-	mu    sync.Mutex
+	mu    *sync.Mutex
 	items PQueue
 }
 
+// PQueue represents a priority queue
 type PQueue []*Item
 
 func (pq PQueue) Len() int { return len(pq) }
@@ -44,6 +45,7 @@ func (pq PQueue) Swap(i, j int) {
 	pq[j].index = j
 }
 
+// Push pushes an item onto the priority queue.
 func (pq *PQueue) Push(x interface{}) {
 	n := len(*pq)
 	item := x.(*Item)
@@ -51,6 +53,7 @@ func (pq *PQueue) Push(x interface{}) {
 	*pq = append(*pq, item)
 }
 
+// Pop pops the next itme from the priority queue.
 func (pq *PQueue) Pop() interface{} {
 	old := *pq
 	n := len(old)
@@ -67,7 +70,7 @@ func (pq *PQueue) update(item *Item, value string, priority int) {
 	heap.Fix(pq, item.index)
 }
 
-// Returns a new priority queue with the item's cap set at l; if l > 0.
+// NewHeapPriority returns a new priority queue with the item's cap set at l; if l > 0.
 func NewHeapPriority(l int) *HeapPriority {
 	if l <= 0 {
 		return &HeapPriority{}
@@ -94,12 +97,14 @@ func (pq HeapPriority) Swap(i, j int) {
 	pq.mu.Unlock()
 }
 
+// Push pushes an item onto the priority queue.
 func (pq *HeapPriority) Push(x interface{}) {
 	pq.mu.Lock()
 	pq.items.Push(x)
 	pq.mu.Unlock()
 }
 
+// Pop pops the next item from the priority queue.
 func (pq *HeapPriority) Pop() interface{} {
 	pq.mu.Lock()
 	defer pq.mu.Unlock()

@@ -93,7 +93,7 @@ func TestQDequeueEnqueue(t *testing.T) {
 			_ = q.Enqueue(v)
 		}
 		if q.Head != test.headPos {
-			t.Errorf("%d: post queue population, expected head pos to be %d, got %d", test.headPos, q.Head)
+			t.Errorf("%d: post queue population, expected head pos to be %d, got %d", i, test.headPos, q.Head)
 		}
 		if q.Len() != test.expectedLen {
 			t.Errorf("%d: post queue population, expected len to be %d got %d", i, test.expectedLen, q.Len())
@@ -198,7 +198,7 @@ func TestDequeuePeekErr(t *testing.T) {
 		for j, v := range test.items {
 			err := q.Enqueue(v)
 			if err != nil {
-				t.Errorf("%d enqueueing #%d: unexpected error %q", i, j)
+				t.Errorf("%d enqueueing #%d: unexpected error %q", i, j, err)
 			}
 		}
 		for j, v := range test.retItems {

@@ -42,7 +42,7 @@ func TestPushStack(t *testing.T) {
 			}
 		}
 		if s.Size() != test.initSize {
-			t.Errorf("%d: after initial push on stack, expected %d items, got %d", test.initSize, s.Size())
+			t.Errorf("%d: after initial push on stack, expected %d items, got %d", i, test.initSize, s.Size())
 			continue
 		}
 		for j, v = range test.pushVals {

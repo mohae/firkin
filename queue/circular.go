@@ -128,7 +128,7 @@ func (c *Circular) Cap() int {
 	return cap(c.Items) - 1
 }
 
-// Resizes resizes a queue; zeroing out the slots.
+// Resize resizes a queue; zeroing out the slots.
 func (c *Circular) Resize(size int) int {
 	c.Lock()
 	if ((size + 1) == c.InitCap) || (size == 0 && cap(c.Items) == c.InitCap) {

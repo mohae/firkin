@@ -1,10 +1,6 @@
-// There are two types of queues, a bounded queue (bqueue) and an unbounded
-// queue (queue). Both queues are thread-safe.
-//
-// For bounded queues, an allocation only occurs at queue creation.
-//
-// For unbounded queues, the initial capacity of the queue will be equal to the
-// received size.
+// Package queue provides various thread-safe queue implementations: an
+// unbounded queue, a bounded queue implemented as a circular queue, and a
+// heap based priority queue.
 package queue
 
 import (
@@ -74,7 +70,7 @@ func (q *Queue) SetShiftPercent(i int) {
 	q.shiftPercent = i
 }
 
-// Enqueue: adds an item to the queue. If adding the item requires growing
+// Enqueue adds an item to the queue. If adding the item requires growing
 // the queue, the queue will either be shifted, to make room at the end of
 // the queue, or it will grow.
 func (q *Queue) Enqueue(item interface{}) error {
@@ -172,11 +168,11 @@ func (q *Queue) Reset() {
 	q.Unlock()
 }
 
-// Resizes the queue to the received size, or, either its original capacity
-// or to 1,25 * the number of items in the queue, whichever is larger.  When a
-// size of 0 is received, the queue will be set to either 1.25 * the number of
-// items in the queue or its initial capacity, whichever is larger.  Queues
-// with space at the front are shifted to the front.
+// Resize resizes the queue to the received size, or, either its original
+// capacity or to 1,25 * the number of items in the queue, whichever is larger.
+// When a size of 0 is received, the queue will be set to either 1.25 * the
+// number of items in the queue or its initial capacity, whichever is larger.
+// Queues with space at the front are shifted to the front.
 func (q *Queue) Resize(size int) int {
 	q.Lock()
 	i := int(math.Mod(float64(len(q.Items)), float64(cap(q.Items)))*1.25) - q.Head

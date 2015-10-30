@@ -154,7 +154,7 @@ func TestBufferPos(t *testing.T) {
 		if test.dequeue {
 			v, ok := b.Dequeue()
 			if test.ok != ok {
-				t.Errorf("%d: dequeue expected %t, got %t", test.ok, ok)
+				t.Errorf("%d: dequeue expected %t, got %t", i, test.ok, ok)
 			}
 			if test.ok {
 				if v != test.val {

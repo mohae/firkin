@@ -1,3 +1,5 @@
+// Package buffer provides a thread-safe buffer implementation for a ring
+// buffer.
 package buffer
 
 import (

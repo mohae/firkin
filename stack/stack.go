@@ -1,3 +1,4 @@
+// Package stack provides a thread-safe stack implementation.
 package stack
 
 import (
@@ -5,6 +6,7 @@ import (
 	"sync"
 )
 
+// Stack is a thread-safe LIFO data structure.
 type Stack struct {
 	rw      sync.RWMutex
 	items   []interface{}
