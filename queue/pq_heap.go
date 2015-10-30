@@ -1,4 +1,5 @@
 package queue
+
 // Copyright 2015 by Joel Scoble
 //
 // This implementation of a priority queue using a heap is based on the code
