@@ -41,7 +41,7 @@ func TestPQHeap(t *testing.T) {
 		value:    "orange",
 		priority: 1,
 	}
-	heap.Push(&pq.items, item)
+	pq.Push(item)
 	pq.update(item, "grapefruit", 5)
 
 	// Take the items out; they arrive in decreasing priority order.

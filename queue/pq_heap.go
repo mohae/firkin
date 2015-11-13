@@ -74,9 +74,9 @@ func (pq *PQueue) update(item *Item, value string, priority int) {
 // NewHeapPriority returns a new priority queue with the item's cap set at l; if l > 0.
 func NewHeapPriority(l int) *HeapPriority {
 	if l <= 0 {
-		return &HeapPriority{}
+		return &HeapPriority{mu: &sync.Mutex{}}
 	}
-	return &HeapPriority{items: make([]*Item, l, l)}
+	return &HeapPriority{mu: &sync.Mutex{}, items: make([]*Item, l, l)}
 }
 
 func (pq HeapPriority) Len() int {
